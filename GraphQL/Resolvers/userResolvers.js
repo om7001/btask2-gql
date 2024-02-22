@@ -137,8 +137,12 @@ const userVerify = async (_, { input }) => {
             return new Error(error.message);
         }
         // const decoded = jwt.verify(input.token, process.env.ACCESS_KEY_SECRET);
+        const data = await User.findById(decoded._id);
+        if (data.isVerified) return new Error("ISVERIFIED")
         const userData = await User.findByIdAndUpdate(decoded._id, { isVerified: true });
         if (!userData) return { isVerified: false };
+
+        console.log(userData.isVerified);
         return { isVerified: true };
     } catch (error) {
         console.error(error);
