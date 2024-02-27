@@ -10,9 +10,6 @@ const path = require('path');
 const typeDefs = require('./GraphQL/TypeDef');
 const resolvers = require('./GraphQL/Resolvers');
 
-
-
-
 const app = express();
 app.use(express.json({ limit: '100mb', extended: true }))
 app.use(express.urlencoded({ limit: '100mb', extended: true }))

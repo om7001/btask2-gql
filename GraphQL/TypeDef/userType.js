@@ -9,6 +9,7 @@ const userType = gql`
         profile: String
         firstName: String
         lastName: String
+        userName: String!
         email: String!
         password: String!
         active: Boolean
@@ -17,6 +18,9 @@ const userType = gql`
         gender: genderOption
         age: Int
         dateofbirth: Date
+        # followers: Int
+        # following: Int
+        # blocked_users: Int
         hobbies: [String]
         createdAt: Date
         updatedAt: Date
@@ -37,6 +41,7 @@ const userType = gql`
         profile: String
         firstName: String
         lastName: String
+        userName: String
         email: String
         active: Boolean
         roll: rollOption
@@ -44,9 +49,18 @@ const userType = gql`
         age: Int
         dateofbirth: Date
         hobbies: [String]
+        followers: Int
+        following: Int
+        blockedUsers: Int
         createdAt: Date
         updatedAt: Date
     }
+
+    type userId{
+        _id: ID
+    }
+
+    
 
     input loginInput{
         email: String!
@@ -65,6 +79,7 @@ const userType = gql`
     input createUserInput{    
         firstName: String
         lastName: String
+        userName: String!
         email: String!
         password: String       
         roll: rollOption
@@ -109,7 +124,6 @@ const userType = gql`
         password: String!
     }
 
-
     input UploadProfilePhotoInput {
         url: String!
       }
@@ -135,6 +149,7 @@ const userType = gql`
         uploadProfilePhoto(input: UploadProfilePhotoInput!): String
         tokenVerification(token: String!): Boolean
         resentVerificationMail(email: String!): Boolean
+
     }
 `
 

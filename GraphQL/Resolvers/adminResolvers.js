@@ -105,7 +105,8 @@ const getPaginatedUsers = combineResolvers(
                         { firstName: { $regex: regex } },
                         { lastName: { $regex: regex } },
                         { email: { $regex: regex } },
-                        { gender: { $regex: regex } }
+                        { gender: { $regex: regex } },
+                        { userName: { $regex: regex } },
                     ],
                     roll: "user"
                 };
