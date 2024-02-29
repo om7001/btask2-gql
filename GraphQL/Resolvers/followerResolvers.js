@@ -60,13 +60,13 @@ const userOnRequestAnswer = combineResolvers(
     async (_, { input }, { user }) => {
         try {
             input.userId = user._id
-            console.log("input---------", input);
+            // console.log("input---------", input);
 
             const userData = await User.findOne({ _id: input.followerId });
             if (!userData) {
                 return new Error("User not found.");
             }
-            console.log("userData-------" + userData._id);
+            // console.log("userData-------" + userData._id);
 
             const followingUser = await Follower.findOneAndUpdate(
                 {
@@ -82,7 +82,7 @@ const userOnRequestAnswer = combineResolvers(
                 }
             );
 
-            console.log("followingUser-------", followingUser);
+            // console.log("followingUser-------", followingUser);
 
             // const blockUpadataUser = await Follower.findOneAndUpdate({ userId: input.followerId, followerId: input.userId, status: "requested" }, { status: input.status }, { new: true })
 
