@@ -6,6 +6,7 @@ const postType = gql`
         title: String!
         description: String
         createdBy: String
+        createdAt: Date
     }
 
     input createPostInput {
@@ -24,6 +25,7 @@ const postType = gql`
         title: String!
         description: String
         createdBy: userResult
+        createdAt: Date
     }
 
     input getPaginatedPostsInput{

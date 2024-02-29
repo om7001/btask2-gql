@@ -15,33 +15,35 @@ const createFollowers = combineResolvers(
             input.userId = user._id;
             console.log(input);
             if (!input.userName || input.userName === user.userName) {
-                throw new Error("Invalid or missing userName in input.");
+                return new Error("Invalid or missing userName in input.");
             }
 
             const followedUser = await User.findOne({ userName: input.userName });
             if (!followedUser) {
-                throw new Error("User not found.");
+                return new Error("User not found.");
             }
 
             const existingFollowerRequested = await Follower.findOne({ userId: user._id, followerId: followedUser._id, status: "requested" })
             if (existingFollowerRequested) {
-                throw new Error("You have already requested to follow this user.");
+                return new Error("You have already requested to follow this user.");
             }
 
             const updateRequested = await Follower.findOneAndUpdate({ userId: user._id, followerId: followedUser._id, status: "rejected" }, { status: input.status }, { new: true })
-                .populate({ path: "userId", select: "userName" })
-                .populate({ path: "followerId", select: "userName" })
-                .exec();
+                // .populate({ path: "userId", select: "userName" })
+                // .populate({ path: "followerId", select: "userName" })
+                // .exec();
             if (updateRequested) {
+                await updateRequested.populate({ path: "userId", select: "userName" })
+                await updateRequested.populate({ path: "followerId", select: "userName" })
                 return updateRequested
             }
 
 
             input.followerId = followedUser._id;
             const newFollower = await Follower.create(input)
-                .populate({ path: "userId", select: "userName" })
-                .populate({ path: "followerId", select: "userName" })
-                .exec();
+                // .populate({ path: "userId", select: "userName" })
+                // .populate({ path: "followerId", select: "userName" })
+                // .exec();
 
             await newFollower.populate({ path: "userId", select: "userName" })
             await newFollower.populate({ path: "followerId", select: "userName" })
