@@ -52,10 +52,15 @@ type userOnRequestAnswerResult {
     status: statusOption
 }
 
+input getFollowingPostInput{
+    userId: ID
+    followerId: ID
+}
+
 type Query {
     getFollower(followerId: ID): [FollowersResult]
     getFollowing(userId: ID): [FollowersResult]!
-    getFollowingPost(userId: ID): [postResult]
+    getFollowingPost(input: getFollowingPostInput): [postResult]
     getBlockUser(userId: ID): [FollowersResult]!
     getRejectedUser(userId: ID): [FollowersResult]!
     getRequestedUser(userId: ID): [FollowersResult]!

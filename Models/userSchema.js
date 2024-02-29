@@ -65,7 +65,7 @@ const userSchema = new Schema({
 userSchema.virtual("followers", {
     ref: "follower",
     localField: "_id",
-    foreignField: "userId",
+    foreignField: "followerId",
     options: { match: { status: "accepted" } },
     count: true
 });
@@ -73,7 +73,7 @@ userSchema.virtual("followers", {
 userSchema.virtual("following", {
     ref: "follower",
     localField: "_id",
-    foreignField: "followerId",
+    foreignField: "userId",
     options: { match: { status: "accepted" } },
     count: true
 });
@@ -83,6 +83,14 @@ userSchema.virtual("blockedUsers", {
     localField: "_id",
     foreignField: "followerId",
     options: { match: { status: "blocked" } },
+    count: true
+});
+
+userSchema.virtual("request", {
+    ref: "follower",
+    localField: "_id",
+    foreignField: "followerId",
+    options: { match: { status: "requested" } },
     count: true
 });
 

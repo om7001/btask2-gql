@@ -11,7 +11,7 @@ const getUser = combineResolvers(
     isAuthenticated,
     async (_, args, { user }) => {
         try {
-            const userData = await User.findById(user._id, { password: 0 }).populate('followers following blockedUsers');
+            const userData = await User.findById(user._id, { password: 0 }).populate('followers following blockedUsers request');
             if (!userData) throw new ApolloError("Users not found")
             return userData;
         } catch (error) {

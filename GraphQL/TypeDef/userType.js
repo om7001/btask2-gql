@@ -52,6 +52,7 @@ const userType = gql`
         followers: Int
         following: Int
         blockedUsers: Int
+        request: Int
         createdAt: Date
         updatedAt: Date
     }
