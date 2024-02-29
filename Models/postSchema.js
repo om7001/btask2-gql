@@ -12,12 +12,24 @@ const postSchema = new Schema({
     },
     createdBy: {
         type: Schema.Types.ObjectId,
-        ref:"user"
+        ref: "user"
     },
-},{
-    timestamps:true,
+}, {
+    timestamps: true,
 })
+postSchema.virtual("likeCount", {
+    ref: "postLikes",
+    localField: "_id",
+    foreignField: "postId",
+    count: true,
+});
 
+postSchema.virtual("commentCount", {
+    ref: "postComments",
+    localField: "_id",
+    foreignField: "postId",
+    count: true,
+});
 postSchema.plugin(mongoosePaginate);
 
 const Post = mongoose.model('post', postSchema)

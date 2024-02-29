@@ -10,7 +10,7 @@ const createPost = combineResolvers(
             input.createdBy = user._id
             console.log(input.createdBy);
             const postData = await Post.create(input)
-            if (!postData) return  new Error("Post Not Created")
+            if (!postData) return new Error("Post Not Created")
             return postData
         } catch (error) {
             console.error(error);
@@ -80,13 +80,15 @@ const deletePost = combineResolvers(
     isAuthenticated,
     async (_, { _id }, { user }) => {
         try {
-            const postData = await Post.findOneAndDelete({
+            const deleteComment = await PostComments.deleteMany({ postId: _id });
+            const deletePost = await Post.findByIdAndDelete({
                 createdBy: user._id,
-                _id
+                _id: _id,
             });
-            if (!postData) {
-                throw new Error("User not found");
-            }
+
+            if (!deleteComment) return new Error("comments not found");
+
+            if (!deletePost) return new Error("post not found");
             return { message: "delete" };
         } catch (error) {
             console.error("Error during delete:", error);
@@ -96,6 +98,10 @@ const deletePost = combineResolvers(
         }
     }
 )
+
+
+
+
 
 const getPaginatedPosts = combineResolvers(
     isAuthenticated,
@@ -112,7 +118,7 @@ const getPaginatedPosts = combineResolvers(
 
             if (!populatedData || populatedData.length === 0) {
                 return new Error("Post not available");
-            }         
+            }
 
             return {
                 docs: populatedData,

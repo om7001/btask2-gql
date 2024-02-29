@@ -26,6 +26,8 @@ const postType = gql`
         description: String
         createdBy: userResult
         createdAt: Date
+        likeCount: Int
+        commentCount: Int
     }
 
     input getPaginatedPostsInput{
