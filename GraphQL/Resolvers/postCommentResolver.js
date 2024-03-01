@@ -11,28 +11,29 @@ const addComment = combineResolvers(
     try {
       const { postId, description, parentCommentId, followerId } = input;
 
-      // if(followerId){
-      input.userId = user._id
-      console.log("input------------", input);
-      const followers = await Follower.find({ userId: user._id, followerId: followerId, status: "accepted" });
-      if (!followers || followers.length === 0) {
-        return new Error("Following Not Found!")
-      }
-      console.log("followers------", followers)
-      const posts = await Post.find({ createdBy: followerId })
-      if (!posts || posts.length === 0) {
-        return new Error("Post not found")
-      };
-      const followingUserPostId = posts.map(post => post._id);
-      console.log(followingUserPostId);
-      // console.log("posts _id------", posts.map(post => post._id));
-      // console.log("posts------", posts);
+      if (followerId) {
+        input.userId = user._id
+        console.log("input------------", input);
+        const followers = await Follower.find({ userId: user._id, followerId: followerId, status: "accepted" });
+        if (!followers || followers.length === 0) {
+          return new Error("Following Not Found!")
+        }
+        console.log("followers------", followers)
+        const posts = await Post.find({ createdBy: followerId })
+        if (!posts || posts.length === 0) {
+          return new Error("Post not found")
+        };
+        const followingUserPostId = posts.map(post => post._id);
+        console.log(followingUserPostId);
+        // console.log("posts _id------", posts.map(post => post._id));
+        // console.log("posts------", posts);
 
-      const stringPostId = String(postId)
-      const stringFollowingUserPostId = String(followingUserPostId)
+        const stringPostId = String(postId)
+        const stringFollowingUserPostId = String(followingUserPostId)
 
-      if (!postId || !stringFollowingUserPostId.includes(stringPostId)) {
-        return new Error("Invalid postId");
+        if (!postId || !stringFollowingUserPostId.includes(stringPostId)) {
+          return new Error("Invalid postId");
+        }
       }
 
 
@@ -76,36 +77,22 @@ const toggleLikeOnPostComment = combineResolvers(
       if (!postId) return new Error("Invalid postId");
       if (!commentId) return new Error("Invalid commentId");
 
-      // if (followerId) {
-
-      //   input.userId = user._id
-      //   console.log("input------------", input);
-      //   const followers = await Follower.find({ userId: user._id, followerId: followerId, status: "accepted" });
-      //   if (!followers || followers.length === 0) {
-      //     return new Error("Following Not Found!")
-      //   }
-      //   console.log("followers------", followers)
-      //   const posts = await Post.find({ createdBy: followerId })
-      //   if (!posts || posts.length === 0) {
-      //     return new Error("Post not found")
-      //   };
-      //   const followingUserPostId = posts.map(post => post._id);
-      //   console.log(followingUserPostId);
-      //   // console.log("posts _id------", posts.map(post => post._id));
-      //   // console.log("posts------", posts);
-
-      //   const stringPostId = String(postId)
-      //   const stringFollowingUserPostId = String(followingUserPostId)
-
-      //   if (!postId || !stringFollowingUserPostId.includes(stringPostId)) {
-      //     return new Error("Invalid postId");
-      //   }
-      // }
-
-
+      if (followerId) {
+        input.userId = user._id
+        console.log("input------------", input);
+        const followers = await Follower.find({ userId: user._id, followerId: followerId, status: "accepted" });
+        if (!followers || followers.length === 0) {
+          return new Error("Following Not Found!")
+        }
+        console.log("followers------", followers)
+      }
 
       let commentLikeData;
 
+      const commentData = await PostComments.findOne({ _id: commentId, postId: postId })
+      if (!commentData) {
+        return new Error("Comments Not Found!")
+      }
       // If isLike is true, user wants to like the post
       commentLikeData = await PostCommentsLikes.findOne({
         postId,
@@ -142,48 +129,75 @@ const toggleLikeOnPostComment = combineResolvers(
   }
 );
 
-const getAllCommentsOnPost = combineResolvers(async (_, args, { user }) => {
-  const { postId } = args;
-  try {
-    const commentData = await PostComments.find({ postId }).populate(
-      "likeCount"
-    );
-    // console.log("🚀 ~ getAllCommentsOnPost ~ commentData:", commentData);
+const getAllCommentsOnPost = combineResolvers(
+  isAuthenticated,
+  async (_, { input }, { user }) => {
+    const { postId, followerId } = input;
+    try {
 
-    const totalCount = commentData.reduce(
-      (sum, comment) => sum + comment.likeCount,
-      0
-    );
-    // console.log("🚀 ~ getAllCommentsOnPost ~ totalCount:", totalCount);
+      if (followerId) {
+        input.userId = user._id
+        // console.log("input------------", input);
+        const followers = await Follower.find({ userId: user._id, followerId: followerId, status: "accepted" });
+        if (!followers || followers.length === 0) {
+          return new Error("Following Not Found!")
+        }
+        // console.log("followers------", followers)
+      }
 
-    if (!commentData) return new Error("No comment found");
 
-    return { totalLike: totalCount, CommentResult: commentData };
-  } catch (error) {
-    console.log("🚀 ~ error:", error);
-    throw error; // Throw error to handle it at a higher level
-  }
-});
+      // console.log(input);
 
-const getAllReplyComment = async (_, args, { user }) => {
-  const { commentId } = args.input;
-  try {
-    const commentData = await PostComments.find({
-      $or: [{ _id: commentId }, { parentCommentId: commentId }],
-    }).populate("likeCount");
-    // console.log("🚀 ~ getAllReplyComment ~ commentData:", commentData);
+      const commentData = await PostComments.find({ postId: postId })
+        .populate("likeCount");
+      // console.log("🚀 ~ getAllCommentsOnPost ~ commentData:", commentData);
 
-    const totalCount = commentData.reduce(
-      (sum, comment) => sum + comment.likeCount,
-      0
-    );
+      const totalCount = commentData.reduce(
+        (sum, comment) => sum + comment.likeCount,
+        0
+      );
+      // console.log("🚀 ~ getAllCommentsOnPost ~ totalCount:", totalCount);
 
-    return { totalLike: totalCount, CommentResult: commentData };
+      if (!commentData) return new Error("No comment found");
 
-  } catch (error) {
-    console.log("🚀 ~ getAllReplyComment ~ error:", error);
-  }
-};
+      return { totalLike: totalCount, CommentResult: commentData };
+    } catch (error) {
+      console.log("🚀 ~ error:", error);
+      throw error; // Throw error to handle it at a higher level
+    }
+  });
+
+const getAllReplyComment = combineResolvers(
+  isAuthenticated, async (_, { input }, { user }) => {
+    const { commentId, followerId } = input;
+    try {
+      if (followerId) {
+        input.userId = user._id
+        console.log("input------------", input);
+        const followers = await Follower.find({ userId: user._id, followerId: followerId, status: "accepted" });
+        if (!followers || followers.length === 0) {
+          return new Error("Following Not Found!")
+        }
+        console.log("followers------", followers)
+      }
+
+
+      const commentData = await PostComments.find({
+        $or: [{ _id: commentId }, { parentCommentId: commentId }],
+      }).populate("likeCount");
+      console.log("🚀 ~ getAllReplyComment ~ commentData:", commentData);
+
+      const totalCount = commentData.reduce(
+        (sum, comment) => sum + comment.likeCount,
+        0
+      );
+
+      return { totalLike: totalCount, CommentResult: commentData };
+
+    } catch (error) {
+      console.log("🚀 ~ getAllReplyComment ~ error:", error);
+    }
+  });
 
 const updateRootComment = combineResolvers(
   isAuthenticated,

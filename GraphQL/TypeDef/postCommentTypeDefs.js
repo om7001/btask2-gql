@@ -40,8 +40,9 @@ const postCommentTypeDefs = gql`
     likeCount: Int
   }
 
-  input getAllReplyComment {
+  input getAllReplyCommentInput {
     commentId: ID
+    followerId: String
   }
 
   input updateRootCommentInput {
@@ -74,6 +75,11 @@ const postCommentTypeDefs = gql`
     postId: String
   }
 
+  input getAllCommentsOnPostInput{
+    postId: String
+    followerId: String
+  }
+
   type getAllCommentsOnPostOutput {
     totalLike: Int
     CommentResult: [CommentResult]
@@ -89,8 +95,8 @@ const postCommentTypeDefs = gql`
   }
 
   type Query {
-    getAllCommentsOnPost(postId: String): getAllCommentsOnPostOutput
-    getAllReplyComment(input: getAllReplyComment): getAllReplyCommentOutput
+    getAllCommentsOnPost(input: getAllCommentsOnPostInput): getAllCommentsOnPostOutput
+    getAllReplyComment(input: getAllReplyCommentInput): getAllReplyCommentOutput
   }
 
   type Mutation {

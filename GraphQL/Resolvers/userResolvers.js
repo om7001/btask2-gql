@@ -4,22 +4,132 @@ const { User } = require('../../Models');
 const { isAuthenticated } = require('../../Middleware')
 const { combineResolvers } = require('graphql-resolvers')
 const fs = require('fs');
-const { error } = require('console');
+// const { default: mongoose } = require('mongoose');
+const mongoose = require('mongoose');
 
 // User
+// const getUser = combineResolvers(
+//     isAuthenticated,
+//     async (_, args, { user }) => {
+//         try {
+//             const userData = await User.findById(user._id, { password: 0 }).populate('followers following blockedUsers request');
+//             if (!userData) throw new ApolloError("Users not found")
+//             return userData;
+//         } catch (error) {
+//             console.error(error);
+//             throw new Error(error);
+//         }
+//     }
+// )
+
 const getUser = combineResolvers(
     isAuthenticated,
     async (_, args, { user }) => {
+        // console.log(user._id); 
         try {
-            const userData = await User.findById(user._id, { password: 0 }).populate('followers following blockedUsers request');
-            if (!userData) throw new ApolloError("Users not found")
-            return userData;
+            const userId = new mongoose.Types.ObjectId(user._id.toString());
+
+            const userData = await User.aggregate([
+                { $match: { _id: userId } },
+                {
+                    $lookup: {
+                        from: "followers",
+                        let: { userId: "$_id" },
+                        pipeline: [
+                            {
+                                $match: {
+                                    $expr: {
+                                        $and: [
+                                            { $eq: ["$followerId", "$$userId"] },
+                                            { $eq: ["$status", "accepted"] }
+                                        ]
+                                    }
+                                }
+                            }
+                        ],
+                        as: "followerInfo"
+                    }
+                },
+                {
+                    $lookup: {
+                        from: "followers",
+                        let: { userId: "$_id" },
+                        pipeline: [
+                            {
+                                $match: {
+                                    $expr: {
+                                        $and: [
+                                            { $eq: ["$userID", "$$userId"] },
+                                            { $eq: ["$status", "accepted"] }
+                                        ]
+                                    }
+                                }
+                            }
+                        ],
+                        as: "following"
+                    }
+                },
+                {
+                    $lookup: {
+                        from: "followers",
+                        let: { userId: "$_id" },
+                        pipeline: [
+                            {
+                                $match: {
+                                    $expr: {
+                                        $and: [
+                                            { $eq: ["$followerId", "$$userId"] },
+                                            { $eq: ["$status", "blocked"] }
+                                        ]
+                                    }
+                                }
+                            }
+                        ],
+                        as: "blockedUsers"
+                    }
+                },
+                {
+                    $lookup: {
+                        from: "followers",
+                        let: { userId: "$_id" },
+                        pipeline: [
+                            {
+                                $match: {
+                                    $expr: {
+                                        $and: [
+                                            { $eq: ["$followerId", "$$userId"] },
+                                            { $eq: ["$status", "requested"] }
+                                        ]
+                                    }
+                                }
+                            }
+                        ],
+                        as: "request"
+                    }
+                },
+                {
+                    $addFields: {
+                        followers: { $size: "$followerInfo" },
+                        following: { $size: "$following" },
+                        blockedUsers: { $size: "$blockedUsers" },
+                        request: { $size: "$request" }
+                    }
+                }
+            ]);
+
+            // console.log(userData);
+            if (!userData || userData.length === 0) {
+                throw new Error("User not found");
+            }
+
+            return userData[0];
         } catch (error) {
-            console.error(error);
-            throw new Error(error);
+            console.error("Error fetching user data:", error);
+            throw new Error("Error fetching user data");
         }
     }
-)
+);
+
 const deleteUser = combineResolvers(
     isAuthenticated,
     async (_, args, { user }) => {
