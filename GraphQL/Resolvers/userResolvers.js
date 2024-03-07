@@ -59,7 +59,7 @@ const getUser = combineResolvers(
                                 $match: {
                                     $expr: {
                                         $and: [
-                                            { $eq: ["$userID", "$$userId"] },
+                                            { $eq: ["$userId", "$$userId"] },
                                             { $eq: ["$status", "accepted"] }
                                         ]
                                     }
