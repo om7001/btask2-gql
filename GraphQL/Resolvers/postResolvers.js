@@ -1,4 +1,4 @@
-const { Post } = require('../../Models');
+const { Post, PostComments } = require('../../Models');
 const { isAuthenticated } = require('../../Middleware')
 const { combineResolvers } = require('graphql-resolvers')
 
@@ -80,12 +80,13 @@ const deletePost = combineResolvers(
     isAuthenticated,
     async (_, { _id }, { user }) => {
         try {
+            console.log(_id);
             const deleteComment = await PostComments.deleteMany({ postId: _id });
             const deletePost = await Post.findByIdAndDelete({
                 createdBy: user._id,
                 _id: _id,
             });
-
+console.log(deleteComment);
             if (!deleteComment) return new Error("comments not found");
 
             if (!deletePost) return new Error("post not found");
